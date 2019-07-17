@@ -48,8 +48,8 @@ RUN pip3 --no-cache-dir install \
          graphviz \
          gpustat \
          h5py \
-         torch \
-         torchvision \
+         https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl \
+         https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl \
          jupyter \
          jupyterlab 
 RUN pip3 --no-cache-dir install datajoint
@@ -63,5 +63,5 @@ EXPOSE 8888
 RUN jupyter serverextension enable --py jupyterlab --sys-prefix
 WORKDIR /notebooks
 
-# By default start running jupyter notebook
-ENTRYPOINT ["bin/bash"]
+# By default start bash
+ENTRYPOINT ["/bin/bash"]

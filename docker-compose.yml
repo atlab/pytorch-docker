@@ -31,4 +31,3 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /mnt/scratch07:/external
     working_dir: /scripts
-    entrypoint: /bin/bash
