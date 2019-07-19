@@ -6,11 +6,7 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - ./notebooks:/notebooks/local_notebooks
       - /tmp:/tmp
-      - /mnt/scratch07:/external
-      - /mnt/lab/microns/data:/data
-      - ./:/src/static-networks
     network_mode: "host"
     entrypoint:
       - jupyter 
@@ -26,8 +22,5 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - ./:/src/static-networks
       - /tmp:/tmp
-      - /tmp/.X11-unix:/tmp/.X11-unix
-      - /mnt/scratch07:/external
     working_dir: /scripts
