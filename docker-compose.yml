@@ -1,0 +1,26 @@
+version: '3'
+services:
+  notebook:
+    build: .
+    env_file: .env
+    ports:
+      - "8888:8888"
+    volumes:
+      - /tmp:/tmp
+    network_mode: "host"
+    entrypoint:
+      - jupyter 
+      - lab
+      - --ip=0.0.0.0
+      - --allow-root
+      - --NotebookApp.token=$JUPYTER_PASSWORD
+      - --no-browser
+
+  bash:
+    build: .
+    env_file: .env
+    ports:
+      - "8888:8888"
+    volumes:
+      - /tmp:/tmp
+    working_dir: /scripts

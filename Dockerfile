@@ -48,8 +48,8 @@ RUN pip3 --no-cache-dir install \
          graphviz \
          gpustat \
          h5py \
-         torch \
-         torchvision \
+         https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl \
+         https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl \
          jupyter \
          jupyterlab 
 RUN pip3 --no-cache-dir install datajoint
@@ -61,18 +61,7 @@ ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:${LD_LIBRARY_PATH}
 # Export port for Jupyter Notebook
 EXPOSE 8888
 RUN jupyter serverextension enable --py jupyterlab --sys-prefix
-
-# Hack to deal with weird bug that prevents running `jupyter notebook` directly
-# from Docker ENTRYPOINT or CMD.
-# Use dumb shell script that runs `jupyter notebook` :(
-# https://github.com/ipython/ipython/issues/7062
-RUN mkdir -p /scripts
-ADD ./run_jupyter.sh /scripts/
-
-# Add Jupyter Notebook config
-ADD ./jupyter_notebook_config.py /root/.jupyter/
-
 WORKDIR /notebooks
 
-# By default start running jupyter notebook
-ENTRYPOINT ["/scripts/run_jupyter.sh"]
+# By default start bash
+ENTRYPOINT ["/bin/bash"]
