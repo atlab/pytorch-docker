@@ -52,7 +52,7 @@ RUN pip3 --no-cache-dir install \
          https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl \
          jupyter \
          jupyterlab 
-RUN pip3 --no-cache-dir install --upgrade datajoint~=0.11
+RUN pip3 --no-cache-dir install --upgrade datajoint~=0.11.0
 
 
 # Add profiling library support
