@@ -20,16 +20,9 @@ RUN apt-get update &&\
                        pkg-config \
                        libblas-dev \
                        liblapack-dev \
-                       python3-dev \
-                       python3-pip \
-                       python3-tk \
-                       python3-wheel \
                        graphviz \
                        libhdf5-dev \
                        swig &&\
-    ln -s /usr/bin/python3 /usr/local/bin/python &&\
-    ln -s /usr/bin/pip3 /usr/local/bin/pip &&\
-    pip install --upgrade pip &&\
     apt-get clean &&\
     # best practice to keep the Docker image lean
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
@@ -37,30 +30,26 @@ RUN apt-get update &&\
 WORKDIR /src
 
 # install miniconda
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh &&\
-    bash ~/miniconda.sh -b -p /root/miniconda &&\
-    eval "$(/root/miniconda/bin/conda shell.bash hook)" &&\
-    conda init &&\
-    conda install xeus-python notebook -c conda-forge &&\
-    conda install pip
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh && \
+    /opt/conda/bin/conda clean -tipsy && \
+    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    echo "conda activate base" >> ~/.bashrc
 
+ENV PATH=/opt/conda/bin:$PATH
+
+RUN . /opt/conda/etc/profile.d/conda.sh && \
+    conda activate base && \
+    conda install -y pip numpy pyyaml scipy matplotlib pandas scikit-learn seaborn pytest graphviz h5py jupyter jupyterlab ipympl ipython mkl mkl-include ninja cython typing && \
+    conda install -y pytorch==1.1.0 torchvision==0.3.0 cudatoolkit=10.0 -c pytorch && \
+    conda install -y xeus-python notebook -c conda-forge && \
+    conda clean -ya
 # Install essential Python packages
 RUN pip --no-cache-dir install \
-         pytest \
-         numpy \
-         matplotlib \
-         scipy \
-         pandas \
-         scikit-learn \
-         seaborn \
-         graphviz \
-         gpustat \
-         h5py \
-         https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl \
-         https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl \
-         jupyter \
-         jupyterlab \
-         ipympl
+         gpustat
+
 RUN pip --no-cache-dir install --upgrade datajoint~=0.11.0
 RUN curl -sL https://deb.nodesource.com/setup_13.x | bash - &&\
     apt-get install -y nodejs &&\
