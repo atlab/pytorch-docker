@@ -50,7 +50,7 @@ RUN . /opt/conda/etc/profile.d/conda.sh && \
     conda install -y pytorch==1.4.0 torchvision==0.5.0 cudatoolkit=10.1 -c pytorch && \
     conda install -y xeus-python notebook gpustat jupyterlab -c conda-forge && \
     conda clean -ya &&\
-    pip --no-cache-dir install --upgrade datajoint~=0.11.3 &&\
+    pip --no-cache-dir install --upgrade datajoint~=0.12.0 &&\
     jupyter labextension install @jupyter-widgets/jupyterlab-manager &&\
     jupyter labextension install jupyter-matplotlib &&\
     jupyter labextension install @jupyterlab/debugger &&\
