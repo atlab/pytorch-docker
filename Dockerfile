@@ -1,4 +1,4 @@
-FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
+FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
 LABEL maintainer="Zhuokun Ding <zkding@outlook.com>"
 
 # Deal with pesky Python 3 encoding issue
@@ -42,21 +42,20 @@ ENV PATH=/opt/conda/bin:$PATH
 
 RUN . /opt/conda/etc/profile.d/conda.sh && \
     conda activate base && \
+    conda update conda && \
     conda install -y pip numpy pyyaml scipy matplotlib \
                      pandas scikit-learn seaborn graphviz python-graphviz \
-                     pydot pytest h5py jupyter ipympl ipython mkl \
+                     pydot pytest h5py ipympl mkl nodejs>=10.0.0\
                      mkl-include ninja cython typing && \
-    conda install -y pytorch==1.1.0 torchvision==0.3.0 cudatoolkit=10.0 -c pytorch && \
-    conda install -y xeus-python notebook gpustat jupyterlab nodejs -c conda-forge && \
-    conda clean -ya
-
-RUN pip --no-cache-dir install --upgrade datajoint~=0.11.0
-
-# install jupyterlab extensions
-RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager &&\
+    conda install -y pytorch==1.4.0 torchvision==0.5.0 cudatoolkit=10.1 -c pytorch && \
+    conda install -y xeus-python notebook gpustat jupyterlab -c conda-forge && \
+    conda clean -ya &&\
+    pip --no-cache-dir install --upgrade datajoint~=0.11.3 &&\
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager &&\
     jupyter labextension install jupyter-matplotlib &&\
     jupyter labextension install @jupyterlab/debugger &&\
-    jupyter nbextension enable --py widgetsnbextension
+    jupyter nbextension enable --py widgetsnbextension 
+
 
 
 # Add profiling library support
