@@ -42,18 +42,15 @@ ENV PATH=/opt/conda/bin:$PATH
 
 RUN . /opt/conda/etc/profile.d/conda.sh && \
     conda activate base && \
-    conda install -y pip numpy pyyaml scipy matplotlib pandas scikit-learn seaborn pytest graphviz h5py jupyter jupyterlab ipympl ipython mkl mkl-include ninja cython typing && \
+    conda install -y pip numpy pyyaml scipy matplotlib \
+                     pandas scikit-learn seaborn graphviz python-graphviz \
+                     pydot pytest h5py jupyter ipympl ipython mkl \
+                     mkl-include ninja cython typing && \
     conda install -y pytorch==1.1.0 torchvision==0.3.0 cudatoolkit=10.0 -c pytorch && \
-    conda install -y xeus-python notebook -c conda-forge && \
+    conda install -y xeus-python notebook gpustat jupyterlab nodejs -c conda-forge && \
     conda clean -ya
-# Install essential Python packages
-RUN pip --no-cache-dir install \
-         gpustat
 
 RUN pip --no-cache-dir install --upgrade datajoint~=0.11.0
-RUN curl -sL https://deb.nodesource.com/setup_13.x | bash - &&\
-    apt-get install -y nodejs &&\
-    curl -L https://npmjs.org/install.sh | sh
 
 # install jupyterlab extensions
 RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager &&\
