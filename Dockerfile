@@ -42,12 +42,12 @@ ENV PATH=/opt/conda/bin:$PATH
 
 RUN . /opt/conda/etc/profile.d/conda.sh && \
     conda activate base && \
-    conda update conda && \
-    conda install -y pip numpy pyyaml scipy matplotlib \
+    conda update conda -y &&\
+    conda install -y python=3.8 pip numpy scipy matplotlib \
                      pandas scikit-learn seaborn graphviz python-graphviz \
-                     pydot pytest h5py ipympl mkl nodejs>=10.0.0\
-                     mkl-include ninja cython typing && \
-    conda install -y pytorch==1.4.0 torchvision==0.5.0 cudatoolkit=10.1 -c pytorch && \
+                     pydot pytest h5py ipympl mkl nodejs\
+                     mkl-include ninja cython &&\
+    conda install -y pytorch==1.4.0 torchvision==0.5.0 cudatoolkit=10.1 -c pytorch &&\
     conda install -y xeus-python notebook gpustat jupyterlab -c conda-forge && \
     conda clean -ya &&\
     pip --no-cache-dir install --upgrade datajoint~=0.11.3 &&\
