@@ -43,6 +43,9 @@ ENV PATH=/opt/conda/bin:$PATH
 RUN . /opt/conda/etc/profile.d/conda.sh && \
     conda activate base && \
     conda update conda -y &&\
+    conda config --add channels conda-forge &&\
+    conda config --add channels pytorch &&\
+    conda config --set channel_priority false &&\
     conda install -y python=3.8 pip numpy scipy matplotlib \
                      pandas scikit-learn seaborn graphviz python-graphviz \
                      pydot pytest h5py ipympl mkl nodejs\
