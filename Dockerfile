@@ -1,4 +1,4 @@
-FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
+FROM nvidia/cuda:11.0-cudnn8-devel-ubuntu18.04
 LABEL maintainer="Zhuokun Ding <zkding@outlook.com>"
 
 # Deal with pesky Python 3 encoding issue
@@ -20,50 +20,71 @@ RUN apt-get update &&\
                        pkg-config \
                        libblas-dev \
                        liblapack-dev \
+                       python3-tk \
+                       python3-wheel \
                        graphviz \
                        libhdf5-dev \
+                       python3.8 \
+                       python3.8-dev \
+                       python3.8-distutils \
                        swig &&\
     apt-get clean &&\
+    ln -s /usr/bin/python3.8 /usr/local/bin/python &&\
+    ln -s /usr/bin/python3.8 /usr/local/bin/python3 &&\
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py &&\
+    python3 get-pip.py &&\
+    rm get-pip.py &&\
     # best practice to keep the Docker image lean
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /src
 
-# install miniconda
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh -O ~/miniconda.sh && \
-    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
-    rm ~/miniconda.sh && \
-    /opt/conda/bin/conda clean -tipsy && \
-    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
-    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
-    echo "conda activate base" >> ~/.bashrc
+# Install essential Python packages
+RUN python3 -m pip --no-cache-dir install \
+         blackcellmagic\
+         pytest \
+         pytest-cov \
+         numpy \
+         matplotlib \
+         scipy \
+         pandas \
+         jupyterlab \
+         scikit-learn \
+         scikit-image \
+         seaborn \
+         graphviz \
+         gpustat \
+         h5py \
+         gitpython \
+         Pillow==6.1.0
+RUN python3 -m pip --no-cache-dir install \
+        torch===1.7.0+cu110 \
+        torchvision===0.8.1+cu110 \
+        torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
-ENV PATH=/opt/conda/bin:$PATH
+RUN python3 -m pip --no-cache-dir install datajoint~=0.11.0
 
-RUN . /opt/conda/etc/profile.d/conda.sh && \
-    conda activate base && \
-    conda update conda -y &&\
-    conda install -y python=3.8 pip numpy scipy matplotlib \
-                     pandas scikit-learn seaborn graphviz python-graphviz \
-                     pydot pytest h5py ipympl mkl nodejs\
-                     mkl-include ninja cython &&\
-    conda install -y pytorch==1.4.0 torchvision==0.5.0 cudatoolkit=10.1 -c pytorch &&\
-    conda install -y xeus-python notebook gpustat jupyterlab -c conda-forge && \
-    conda clean -ya &&\
-    pip --no-cache-dir install --upgrade datajoint~=0.11.3 &&\
-    jupyter labextension install @jupyter-widgets/jupyterlab-manager &&\
-    jupyter labextension install jupyter-matplotlib &&\
-    jupyter labextension install @jupyterlab/debugger &&\
-    jupyter nbextension enable --py widgetsnbextension 
+# in datajoint 0.11, dj.ERD requires a lower version of networkx
+RUN python3 -m pip --no-cache-dir uninstall networkx -y
+RUN python3 -m pip --no-cache-dir install networkx==2.3
 
+# install nodejs and ipympl for interactive plotting in jupyter
+RUN python3 -m pip --no-cache-dir install ipympl==0.5.8
+RUN curl -sL https://deb.nodesource.com/setup_15.x | bash - &&\
+    apt-get install -y nodejs
 
+# Install useful jupyter lab extensions
+RUN jupyter labextension install @jupyterlab/toc \
+                                 @hokyjack/jupyterlab-monokai-plus \
+                                 @jupyter-widgets/jupyterlab-manager \
+                                 jupyter-matplotlib@0.7.4
 
 # Add profiling library support
 ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:${LD_LIBRARY_PATH}
 
 # Export port for Jupyter Notebook
 EXPOSE 8888
-RUN jupyter serverextension enable --py jupyterlab --sys-prefix
+
 WORKDIR /notebooks
 
 # By default start bash
