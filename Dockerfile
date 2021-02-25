@@ -58,7 +58,8 @@ RUN python3 -m pip --no-cache-dir install \
          gpustat \
          h5py \
          gitpython \
-         Pillow==6.1.0
+         Pillow==6.1.0 \
+         jupyter-dash
          
 RUN python3 -m pip --no-cache-dir install \
         torch===1.7.0+cu110 \
@@ -66,6 +67,13 @@ RUN python3 -m pip --no-cache-dir install \
         torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
 RUN python3 -m pip --no-cache-dir install datajoint~=0.12.0
+
+# Install Node.js for rebuilding jupyter lab
+RUN curl -fsSL https://deb.nodesource.com/setup_current.x | bash -
+RUN apt-get install -y nodejs
+
+# Rebuilt jupyer lab
+RUN jupyter lab build
 
 # Add profiling library support
 ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:${LD_LIBRARY_PATH}
