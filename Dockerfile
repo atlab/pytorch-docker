@@ -1,4 +1,4 @@
-FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
+FROM nvidia/cuda:11.0-cudnn8-devel-ubuntu18.04
 LABEL maintainer="Zhuokun Ding <zkding@outlook.com>"
 
 # Deal with pesky Python 3 encoding issue
@@ -20,47 +20,71 @@ RUN apt-get update &&\
                        pkg-config \
                        libblas-dev \
                        liblapack-dev \
-                       python3-dev \
-                       python3-pip \
                        python3-tk \
                        python3-wheel \
                        graphviz \
                        libhdf5-dev \
+                       python3.8 \
+                       python3.8-dev \
+                       python3.8-distutils \
                        swig &&\
-    ln -s /usr/bin/python3 /usr/local/bin/python &&\
-    ln -s /usr/bin/pip3 /usr/local/bin/pip &&\
-    pip install --upgrade pip &&\
     apt-get clean &&\
+    ln -s /usr/bin/python3.8 /usr/local/bin/python &&\
+    ln -s /usr/bin/python3.8 /usr/local/bin/python3 &&\
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py &&\
+    python3 get-pip.py &&\
+    rm get-pip.py &&\
     # best practice to keep the Docker image lean
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /src
 
 # Install essential Python packages
-RUN pip3 --no-cache-dir install \
+RUN python3 -m pip --no-cache-dir install \
+         blackcellmagic\
          pytest \
+         pytest-cov \
          numpy \
          matplotlib \
          scipy \
          pandas \
+         jupyterlab \
          scikit-learn \
+         scikit-image \
          seaborn \
          graphviz \
          gpustat \
          h5py \
-         https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl \
-         https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl \
-         jupyter \
-         jupyterlab 
-RUN pip3 --no-cache-dir install --upgrade datajoint~=0.11.0
+         gitpython \
+         Pillow==6.1.0
+RUN python3 -m pip --no-cache-dir install \
+        torch===1.7.0+cu110 \
+        torchvision===0.8.1+cu110 \
+        torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
+RUN python3 -m pip --no-cache-dir install datajoint~=0.11.0
+
+# in datajoint 0.11, dj.ERD requires a lower version of networkx
+RUN python3 -m pip --no-cache-dir uninstall networkx -y
+RUN python3 -m pip --no-cache-dir install networkx==2.3
+
+# install nodejs and ipympl for interactive plotting in jupyter
+RUN python3 -m pip --no-cache-dir install ipympl==0.5.8
+RUN curl -sL https://deb.nodesource.com/setup_15.x | bash - &&\
+    apt-get install -y nodejs
+
+# Install useful jupyter lab extensions
+RUN jupyter labextension install @jupyterlab/toc \
+                                 @hokyjack/jupyterlab-monokai-plus \
+                                 @jupyter-widgets/jupyterlab-manager \
+                                 jupyter-matplotlib@0.7.4
 
 # Add profiling library support
 ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:${LD_LIBRARY_PATH}
 
 # Export port for Jupyter Notebook
 EXPOSE 8888
-RUN jupyter serverextension enable --py jupyterlab --sys-prefix
+
 WORKDIR /notebooks
 
 # By default start bash
