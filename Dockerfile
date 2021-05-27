@@ -66,7 +66,7 @@ RUN python3 -m pip --no-cache-dir install \
         torchvision===0.8.1+cu110 \
         torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
-RUN python3 -m pip --no-cache-dir install datajoint==0.12.3
+RUN python3 -m pip --no-cache-dir install datajoint~=0.12.0
 
 # Install Node.js for rebuilding jupyter lab
 RUN curl -fsSL https://deb.nodesource.com/setup_current.x | bash -
@@ -81,7 +81,7 @@ ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:${LD_LIBRARY_PATH}
 # Export port for Jupyter Notebook
 EXPOSE 8888
 
-WORKDIR /notebooks
+WORKDIR /
 
 # By default start bash
 ENTRYPOINT ["/bin/bash"]
