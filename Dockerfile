@@ -66,7 +66,7 @@ RUN python3 -m pip --no-cache-dir install \
         torchvision===0.8.1+cu110 \
         torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
-RUN python3 -m pip --no-cache-dir install datajoint~=0.12.0
+RUN python3 -m pip --no-cache-dir install datajoint==0.12.9
 
 # Install Node.js for rebuilding jupyter lab
 RUN curl -fsSL https://deb.nodesource.com/setup_current.x | bash -
