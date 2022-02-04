@@ -49,6 +49,8 @@ RUN python3 -m pip --no-cache-dir install \
          scipy \
          pandas \
          jupyterlab \
+         ipywidgets \
+         ipympl \
          scikit-learn \
          scikit-image \
          seaborn \
@@ -56,28 +58,22 @@ RUN python3 -m pip --no-cache-dir install \
          gpustat \
          h5py \
          gitpython \
-         Pillow==6.1.0
+         Pillow==6.1.0 \
+         jupyter-dash
+         
 RUN python3 -m pip --no-cache-dir install \
         torch===1.7.0+cu110 \
         torchvision===0.8.1+cu110 \
         torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
-RUN python3 -m pip --no-cache-dir install datajoint~=0.11.0
+RUN python3 -m pip --no-cache-dir install git+https://github.com/atlab/datajoint-python.git
 
-# in datajoint 0.11, dj.ERD requires a lower version of networkx
-RUN python3 -m pip --no-cache-dir uninstall networkx -y
-RUN python3 -m pip --no-cache-dir install networkx==2.3
+# Install Node.js for rebuilding jupyter lab
+RUN curl -fsSL https://deb.nodesource.com/setup_current.x | bash -
+RUN apt-get install -y nodejs
 
-# install nodejs and ipympl for interactive plotting in jupyter
-RUN python3 -m pip --no-cache-dir install ipympl==0.5.8
-RUN curl -sL https://deb.nodesource.com/setup_15.x | bash - &&\
-    apt-get install -y nodejs
-
-# Install useful jupyter lab extensions
-RUN jupyter labextension install @jupyterlab/toc \
-                                 @hokyjack/jupyterlab-monokai-plus \
-                                 @jupyter-widgets/jupyterlab-manager \
-                                 jupyter-matplotlib@0.7.4
+# Rebuilt jupyer lab
+RUN jupyter lab build
 
 # Add profiling library support
 ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:${LD_LIBRARY_PATH}
@@ -85,7 +81,7 @@ ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:${LD_LIBRARY_PATH}
 # Export port for Jupyter Notebook
 EXPOSE 8888
 
-WORKDIR /notebooks
+WORKDIR /
 
 # By default start bash
 ENTRYPOINT ["/bin/bash"]
