@@ -27,20 +27,29 @@ RUN apt-get update &&\
                        python3.8 \
                        python3.8-dev \
                        python3.8-distutils \
+                       python3.8-venv \
                        swig &&\
     apt-get clean &&\
     ln -s /usr/bin/python3.8 /usr/local/bin/python &&\
     ln -s /usr/bin/python3.8 /usr/local/bin/python3 &&\
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py &&\
-    python3 get-pip.py &&\
+    # best practice to keep the Docker image lean
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# Install Node.js for rebuilding jupyter lab
+RUN curl -fsSL https://deb.nodesource.com/setup_current.x | bash -
+RUN apt-get install -y nodejs
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py &&\
+    python get-pip.py &&\
     rm get-pip.py &&\
     # best practice to keep the Docker image lean
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
 WORKDIR /src
 
 # Install essential Python packages
-RUN python3 -m pip --no-cache-dir install \
+# Avoid running pip as root
+RUN addgroup --system app && adduser --system --group app
+USER app:app
+ENV PATH="/home/app/.local/bin:$PATH" 
+RUN python -m pip --no-cache-dir install \
          blackcellmagic\
          pytest \
          pytest-cov \
@@ -60,18 +69,12 @@ RUN python3 -m pip --no-cache-dir install \
          gitpython \
          Pillow==6.1.0 \
          jupyter-dash
-         
-RUN python3 -m pip --no-cache-dir install \
+RUN python -m pip --no-cache-dir install \
         torch===1.7.0+cu110 \
         torchvision===0.8.1+cu110 \
         torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
-RUN python3 -m pip --no-cache-dir install git+https://github.com/atlab/datajoint-python.git
-
-# Install Node.js for rebuilding jupyter lab
-RUN curl -fsSL https://deb.nodesource.com/setup_current.x | bash -
-RUN apt-get install -y nodejs
-
+RUN python -m pip --no-cache-dir install git+https://github.com/atlab/datajoint-python.git
 # Rebuilt jupyer lab
 RUN jupyter lab build
 
