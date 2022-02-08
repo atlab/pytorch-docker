@@ -48,6 +48,7 @@ WORKDIR /src
 # Avoid running pip as root
 RUN addgroup --system app && adduser --system --group app
 USER app:app
+ENV HOME /home/app
 ENV PATH="/home/app/.local/bin:$PATH" 
 RUN python -m pip --no-cache-dir install \
          blackcellmagic\
